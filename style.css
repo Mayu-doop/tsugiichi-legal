@@ -1,0 +1,91 @@
+:root{
+  --p:#4F8CFF; --sub:#EEF5FF; --ink:#222C3D; --muted:#76829B;
+  --faint:#A8B1C4; --line:#E8EDF5; --bg:#FFFFFF; --purple:#7C6CF0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+  color:var(--ink); background:
+    linear-gradient(180deg,#F4F8FF 0%,#FBFCFF 220px,#FFFFFF 520px) no-repeat;
+  line-height:1.85; font-size:16px; -webkit-font-smoothing:antialiased;
+}
+a{color:var(--p);text-decoration:none}
+a:hover{text-decoration:underline}
+.site-header{
+  max-width:760px;margin:0 auto;padding:20px 22px 10px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;
+}
+.brand{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:22px;color:var(--ink);
+}
+.brand:hover{text-decoration:none}
+.site-nav{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.site-nav a{color:var(--muted)}
+.site-nav a.on{color:var(--p);font-weight:600}
+.content{
+  max-width:760px;margin:0 auto;padding:18px 22px 40px;
+}
+.content h1{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:700;
+  font-size:30px;line-height:1.4;color:var(--ink);margin:18px 0 6px;letter-spacing:.3px;
+}
+.content h2{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:700;
+  font-size:20px;color:var(--ink);margin:34px 0 10px;padding-top:8px;
+}
+.content h3{
+  font-weight:700;font-size:16.5px;color:var(--ink);margin:22px 0 6px;
+}
+.content p{margin:12px 0;color:#33405A}
+.content ul,.content ol{margin:12px 0 12px 1.4em;color:#33405A}
+.content li{margin:6px 0}
+.content strong{color:var(--ink);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--line);margin:30px 0}
+.content a{font-weight:500}
+.table-wrap{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:520px}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--sub);color:var(--ink);font-weight:700;white-space:nowrap}
+td{color:#33405A}
+/* 2列の定義リスト（特商法など） */
+.kv{margin:18px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.kv>div{display:flex;border-top:1px solid var(--line)}
+.kv>div:first-child{border-top:none}
+.kv dt{flex:0 0 36%;background:var(--sub);padding:13px 15px;font-weight:700;color:var(--ink);font-size:14.5px}
+.kv dd{flex:1;padding:13px 15px;color:#33405A;font-size:14.5px;min-width:0}
+/* 最終更新日（H1直後の最初の段落） */
+.content h1 + p{color:var(--muted);font-size:14px;margin-top:0}
+.site-footer{
+  max-width:760px;margin:0 auto;padding:26px 22px 50px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;text-align:center;
+}
+.site-footer .links{margin-bottom:10px}
+.site-footer .links a{color:var(--muted)}
+.site-footer .copy{margin:4px 0;color:var(--faint)}
+/* インデックス */
+.lead{font-size:17px;color:var(--muted);margin:8px 0 22px}
+.cards{display:grid;gap:14px}
+.card{
+  display:block;border:1px solid var(--line);border-radius:16px;padding:20px 22px;
+  background:#fff;box-shadow:0 1px 3px rgba(20,40,80,.05);transition:.15s;
+}
+.card:hover{text-decoration:none;border-color:var(--p);box-shadow:0 8px 24px rgba(79,140,255,.14);transform:translateY(-1px)}
+.card h2{font-family:"Zen Maru Gothic",sans-serif;font-size:18px;color:var(--ink);margin:0 0 6px}
+.card p{color:var(--muted);font-size:14.5px;margin:0 0 10px;line-height:1.7}
+.card .go{color:var(--p);font-weight:600;font-size:14px}
+@media(max-width:520px){
+  .content h1{font-size:25px}
+  body{font-size:15.5px}
+  /* 2列定義リストを縦積み */
+  .kv>div{flex-direction:column}
+  .kv dt{flex:none;border-bottom:1px solid var(--line)}
+  /* 3列以上のテーブルを縦積みカードに */
+  table{min-width:0}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tr{border:1px solid var(--line);border-radius:12px;margin:12px 0;background:#fff;overflow:hidden}
+  td{border:none;border-top:1px solid var(--line);padding:10px 14px}
+  tr td:first-child{border-top:none}
+  td::before{content:attr(data-label);display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px}
+}
