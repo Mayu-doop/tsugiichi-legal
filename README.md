@@ -17,7 +17,7 @@
 
 ## 公開URL
 
-- ホーム: `https://kimera-doop.github.io/tsugiichi-legal/`
+- ホーム: `https://mayu-doop.github.io/tsugiichi-legal/`
 - プライバシーポリシー: `.../privacy.html`
 - 利用規約: `.../terms.html`
 - 特定商取引法に基づく表記: `.../tokushoho.html`

@@ -1,0 +1,4 @@
+# 生成物（*.html / style.css）は build.mjs が LF で書き出す。
+# Windows で CRLF に変換されると、内容が同じでも git 上は「全部 変更」に見える。
+# 2026-08-01 に実際に踏んだので、リポジトリ全体を LF に固定する。
+* text=auto eol=lf

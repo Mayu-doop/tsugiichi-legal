@@ -3,8 +3,14 @@
 // 使い方: node build.mjs
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
+// ⚠️ 以前は `new URL(import.meta.url).pathname` を手で加工していたが、
+//    パスに日本語（例: …\AI\開発\…）が入ると URL エンコードされたまま
+//    （…\AI\%E9%96%8B%E7%99%BA\…）になり、ファイルが開けずに落ちる。
+//    2026-08-01 に実際に踏んだ。fileURLToPath なら Windows のドライブレターも
+//    パーセント記号の復元も両方 正しく処理される。
+const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT = path.join(ROOT, 'content');
 
 // ── ブランド配色（src/theme/tokens.ts の LIGHT より） ──
