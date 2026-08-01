@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>パスワードの再設定｜つぎいち</title>
+<meta name="description" content="つぎいちのパスワード再設定を続けるページ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .step { max-width: 34rem; margin: 0 auto; }
+  .bigbtn {
+    display: block; width: 100%; box-sizing: border-box;
+    margin: 1.75rem 0 0; padding: 1.05rem 1.25rem;
+    font: inherit; font-weight: 700; font-size: 1.05rem;
+    color: #fff; background: #4F8CFF; border: 0; border-radius: 14px;
+    cursor: pointer; text-align: center;
+    box-shadow: 0 6px 18px rgba(79,140,255,.28);
+  }
+  .bigbtn:active { transform: translateY(1px); }
+  .bigbtn[disabled] { opacity: .45; cursor: default; box-shadow: none; }
+  .note { margin-top: 1.5rem; font-size: .92rem; line-height: 1.9; opacity: .8; }
+  .err { margin-top: 1.5rem; padding: 1rem 1.1rem; border-radius: 12px;
+         background: #fdecec; color: #a3282f; line-height: 1.8; }
+  .ok  { margin-top: 1.5rem; line-height: 1.9; }
+  @media (prefers-color-scheme: dark) {
+    .err { background: #3a1f22; color: #ffb4b4; }
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">つぎいち</a>
+  <nav class="site-nav"><a href="index.html">ホーム</a><a href="privacy.html">プライバシー</a><a href="terms.html">利用規約</a><a href="tokushoho.html">特商法</a><a href="support.html">サポート</a></nav>
+</header>
+
+<main class="content">
+  <div class="step">
+    <h1>パスワードの再設定</h1>
+
+    <div id="ready" hidden>
+      <p class="lead">下のボタンを押すと、つぎいちのアプリが開いて、新しいパスワードを設定できます。</p>
+      <button id="go" class="bigbtn" type="button">アプリを開いて再設定する</button>
+      <p class="note">
+        ボタンを押しても何も起きないときは、つぎいちのアプリがこの端末に入っていない可能性があります。<br>
+        このページは、リンクが自動で読み取られて無効になるのを防ぐためのものです。押すのは1回で大丈夫です。
+      </p>
+    </div>
+
+    <div id="opened" hidden>
+      <p class="ok">アプリを開いています。切り替わらない場合は、もう一度ボタンを押してください。</p>
+      <button id="again" class="bigbtn" type="button">もう一度ひらく</button>
+    </div>
+
+    <div id="bad" hidden>
+      <div class="err">
+        このページを直接ひらくことはできません。<br>
+        つぎいちから届いた「パスワード再設定」のメールにあるボタンから、もう一度おためしください。
+      </div>
+      <p class="note">
+        メールが見あたらないときは、アプリの「パスワードをお忘れですか？」からもう一度お送りできます。<br>
+        うまくいかないときは <a href="support.html">サポート</a> からお知らせください。
+      </p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p class="links"><a href="privacy.html">プライバシーポリシー</a>・<a href="terms.html">利用規約</a>・<a href="tokushoho.html">特定商取引法に基づく表記</a>・<a href="support.html">サポート</a></p>
+  <p class="copy">事業者：鈴木麻友　／　お問い合わせ：sub2.31245mail@gmail.com</p>
+  <p class="copy">© つぎいち</p>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// なぜこのページが要るか（2026-08-01）
+//
+// Supabase のパスワード再設定リンクは「1回しか使えない」。
+// ところがメール側のリンク走査（安全性チェック）が、届いた数秒後に
+// リンクを開いてしまい、人が押すころにはトークンが死んでいた。
+// 実測: メール送信 → 6〜10秒後に /verify が成功 → 以後は全部 403。
+//
+// そこでメールのリンクを「このページ」に向け、人がボタンを押したときだけ
+// Supabase の /verify へ飛ばす。走査ロボットはページを読むだけでボタンを押さない。
+// → トークンが生き残り、アプリには従来どおり ?code= 付きで戻る。
+//
+// 重要: <a href> で verify へ直接リンクしてはいけない。
+//        走査がリンクをたどって、同じことが起きる。必ずクリックで組み立てる。
+// ─────────────────────────────────────────────────────────────
+
+var SUPABASE_URL = 'https://ilzzfxlijtgqddryizdy.supabase.co';
+var DEFAULT_REDIRECT = 'tsugiichi://auth/reset';
+var ALLOWED_TYPES = ['recovery', 'signup', 'magiclink', 'invite', 'email_change'];
+
+function el(id) { return document.getElementById(id); }
+function show(id) { var n = el(id); if (n) n.hidden = false; }
+
+var params = new URLSearchParams(window.location.search);
+var token = (params.get('t') || '').trim();
+var type = (params.get('type') || 'recovery').trim();
+var redirect = (params.get('r') || '').trim() || DEFAULT_REDIRECT;
+
+if (!token || ALLOWED_TYPES.indexOf(type) === -1) {
+  show('bad');
+} else {
+  var target =
+    SUPABASE_URL + '/auth/v1/verify' +
+    '?token=' + encodeURIComponent(token) +
+    '&type=' + encodeURIComponent(type) +
+    '&redirect_to=' + encodeURIComponent(redirect);
+
+  var open = function () {
+    el('ready').hidden = true;
+    show('opened');
+    window.location.href = target;
+  };
+
+  el('go').addEventListener('click', open);
+  el('again').addEventListener('click', function () { window.location.href = target; });
+  show('ready');
+}
+</script>
+</body>
+</html>
