@@ -89,6 +89,25 @@
 //
 // 重要: <a href> で verify へ直接リンクしてはいけない。
 //        走査がリンクをたどって、同じことが起きる。必ずクリックで組み立てる。
+//
+// ─────────────────────────────────────────────────────────────
+// なぜ経路が2つあるか（2026-08-07・両対応にした）
+//
+// ?code= 経路は PKCE なので、交換に code_verifier（フロー状態）が要る。
+// これが数分で切れるため「メールを後で開くと使えない」が起きていた。
+// アプリ側は build 14（1.0.1）で verifyOtp({ token_hash, type }) の受け口を
+// 持ったので、token_hash をそのまま渡せば PKCE のフロー状態が要らなくなり、
+// Supabase の OTP 寿命（既定1時間）まで生き延びる。
+//
+// ただし切り替えには順序の問題がある:
+//   - メールが渡してくる値は、テンプレートが {{ .ConfirmationURL }} のままだと
+//     pkce_ 前置きのトークンで、これは verifyOtp に渡せない。
+//   - 逆に 1.0.0 のままのアプリは token_hash を受け取れない。
+//
+// そこで「値の形」で分岐する。ページ側はどちらの形が来ても正しく捌けるので、
+// メールテンプレートを {{ .TokenHash }} へ変える前にこのページを上げても、
+// 挙動は 1 ミリも変わらない（＝再設定が止まる窓ができない）。
+// テンプレート変更で不具合が出たら、テンプレートだけ戻せば復旧する。
 // ─────────────────────────────────────────────────────────────
 
 var SUPABASE_URL = 'https://ilzzfxlijtgqddryizdy.supabase.co';
@@ -106,11 +125,28 @@ var redirect = (params.get('r') || '').trim() || DEFAULT_REDIRECT;
 if (!token || ALLOWED_TYPES.indexOf(type) === -1) {
   show('bad');
 } else {
-  var target =
-    SUPABASE_URL + '/auth/v1/verify' +
-    '?token=' + encodeURIComponent(token) +
-    '&type=' + encodeURIComponent(type) +
-    '&redirect_to=' + encodeURIComponent(redirect);
+  var target;
+
+  if (token.indexOf('pkce_') === 0) {
+    // 旧経路: pkce_ トークンは verifyOtp に渡せないので、従来どおり
+    // Supabase の /verify を通して ?code= の形でアプリへ戻す。
+    // 1.0.0 のアプリでも 1.0.1 のアプリでも受け取れる。
+    target =
+      SUPABASE_URL + '/auth/v1/verify' +
+      '?token=' + encodeURIComponent(token) +
+      '&type=' + encodeURIComponent(type) +
+      '&redirect_to=' + encodeURIComponent(redirect);
+  } else {
+    // 新経路: token_hash をそのままアプリへ渡す。
+    // アプリが verifyOtp({ token_hash, type }) を呼ぶので、
+    // PKCE のフロー状態が要らず、時間をおいても通る。
+    // ⚠️ 受け口は build 14（1.0.1）以降にしか無い。
+    var sep = redirect.indexOf('?') === -1 ? '?' : '&';
+    target =
+      redirect + sep +
+      'token_hash=' + encodeURIComponent(token) +
+      '&type=' + encodeURIComponent(type);
+  }
 
   var open = function () {
     el('ready').hidden = true;
